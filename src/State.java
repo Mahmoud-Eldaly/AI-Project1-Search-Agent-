@@ -12,6 +12,10 @@ public class State {
 		moneySpent=mSpent;
 	}
 	
+	public String toString() {
+		return "State={pros:"+prosperity+", food:"+food+", mat:"+materials+", enery:"+energy+", spennt:"+moneySpent;
+	}
+	
 
 }
 
