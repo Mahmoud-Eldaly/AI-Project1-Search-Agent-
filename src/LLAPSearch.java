@@ -9,7 +9,9 @@ public class LLAPSearch extends GenericSearch {
 	int amountReqEnergy, delayReqEnergy;
 	int priceBUILD1, foodUseBUILD1, materialsUseBUILD1, energyUseBUILD1, prosperityBUILD1;
 	int priceBUILD2, foodUseBUILD2, materialsUseBUILD2, energyUseBUILD2, prosperityBUILD2;
-	boolean foundIt=false;
+	boolean foundIt = false;
+	String solution = "NOSOLUTION";
+	int nodesExpanded = 0;
 
 	public LLAPSearch() {
 
@@ -17,7 +19,7 @@ public class LLAPSearch extends GenericSearch {
 
 	@Override
 	public String solve(String initalState, String strategy, boolean visualize) {
-		//boolean condition;
+		// boolean condition;
 		tokenizeInitState(initalState);
 		Node rootNode = new Node(rootState, null, null, 0);
 		Object list;
@@ -38,7 +40,7 @@ public class LLAPSearch extends GenericSearch {
 		}
 
 		// handle the varieties of list here, i will just work with stack for now
-		while (!((Stack<Node>) list).isEmpty()&&!foundIt) {
+		while (!((Stack<Node>) list).isEmpty() && !foundIt) {
 			// can i order mresource at the same moment of finishing pending or i have to
 			// wait for next cycle?
 			// if (pendingFood && timeToFood == 0) {
@@ -54,16 +56,19 @@ public class LLAPSearch extends GenericSearch {
 
 		}
 
-		return "NOSOLUTION";
+		return this.solution + ";" + this.nodesExpanded;
 	}
 
 	void expand(Node cur, Object list) {
+		this.nodesExpanded++;
+		//System.out.println(cur.state.moneySpent);
 		if (this.blockedwall(cur))
 			return;
-		if(this.goalTest(cur)) {
-			foundIt=true;
-			//System.out.println(cur.state.toString());
-			//System.out.println("I found it!!!!!");
+		if (this.goalTest(cur)) {
+			foundIt = true;
+			this.solution = printChain(cur);
+			// System.out.println(cur.state.toString());
+			// System.out.println("I found it!!!!!");
 			return;
 		}
 		if (list instanceof Stack) {
@@ -87,24 +92,28 @@ public class LLAPSearch extends GenericSearch {
 		switch (operator) {
 		case RequestFood:
 
-			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1, cur.moneySpent);
+			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
+					cur.moneySpent + priceFood + priceMaterials + priceEnergy);
 			return new Node(state, parent, Action.RequestFood, parent.depth + 1, true, false, false, this.delayReqFood,
 					0, 0);
 		case RequestMaterials:
-
-			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1, cur.moneySpent);
+			////// price resoures here...
+			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
+					cur.moneySpent + priceFood + priceMaterials + priceEnergy);
 			return new Node(state, parent, Action.RequestMaterials, parent.depth + 1, false, true, false, 0,
 					this.delayReqMaterials, 0);
 		case RequestEnergy:
-			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1, cur.moneySpent);
+			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
+					cur.moneySpent + priceFood + priceMaterials + priceEnergy);
 			return new Node(state, parent, Action.RequestEnergy, parent.depth + 1, false, false, true, 0, 0,
 					this.delayReqEnergy);
 		case WAIT:
-			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1, cur.moneySpent);
+			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
+					cur.moneySpent + priceFood + priceMaterials + priceEnergy);
 			if (!parent.pending) {
 				return new Node(state, parent, Action.WAIT, parent.depth + 1);
 			} else {
-				return updatePending(parent, state);
+				return updatePending(parent, state, Action.WAIT);
 			}
 		case BUILD1:
 			state = new State(cur.prosperity + this.prosperityBUILD1, cur.food - this.foodUseBUILD1,
@@ -113,9 +122,9 @@ public class LLAPSearch extends GenericSearch {
 			if (!parent.pending) {
 				return new Node(state, parent, Action.BUILD1, parent.depth + 1);
 			} else {
-				return updatePending(parent, state);
+				return updatePending(parent, state, Action.BUILD1);
 			}
-			
+
 		case BUILD2:
 			state = new State(cur.prosperity + this.prosperityBUILD2, cur.food - this.foodUseBUILD2,
 					cur.materials - this.materialsUseBUILD2, cur.energy - this.energyUseBUILD2,
@@ -123,9 +132,9 @@ public class LLAPSearch extends GenericSearch {
 			if (!parent.pending) {
 				return new Node(state, parent, Action.BUILD2, parent.depth + 1);
 			} else {
-				return updatePending(parent, state);
+				return updatePending(parent, state, Action.BUILD2);
 			}
-			
+
 		default:
 			return null;
 		}
@@ -133,7 +142,7 @@ public class LLAPSearch extends GenericSearch {
 	}
 
 	void tokenizeInitState(String initState) {
-		initState=initState.replace(';', ',');
+		initState = initState.replace(';', ',');
 		String[] Strvalues = initState.split(",");
 		int[] values = new int[Strvalues.length];
 		for (int i = 0; i < values.length; i++) {
@@ -150,16 +159,30 @@ public class LLAPSearch extends GenericSearch {
 		this.delayReqMaterials = values[10];
 		this.amountReqEnergy = values[11];
 		this.delayReqEnergy = values[12];
-		this.priceBUILD1 = values[13];
+		this.priceBUILD1 = values[13] + (this.foodUseBUILD1 * this.priceFood)
+				+ (this.materialsUseBUILD1 * this.priceMaterials) + (this.energyUseBUILD1 * this.priceEnergy);
 		this.foodUseBUILD1 = values[14];
 		this.materialsUseBUILD1 = values[15];
 		this.energyUseBUILD1 = values[16];
 		this.prosperityBUILD1 = values[17];
-		this.priceBUILD2 = values[18];
+		this.priceBUILD2 = values[18]+(this.foodUseBUILD2 * this.priceFood)
+				+ (this.materialsUseBUILD2 * this.priceMaterials) + (this.energyUseBUILD2 * this.priceEnergy);;
 		this.foodUseBUILD2 = values[19];
 		this.materialsUseBUILD2 = values[20];
 		this.energyUseBUILD2 = values[21];
 		this.prosperityBUILD2 = values[22];
+
+	}
+
+	String printChain(Node cur) {
+		String res = ";" + cur.state.moneySpent;
+		while (cur != null) {
+			System.out.println(cur.state);
+			res = cur.operator + "," + res;
+			cur = cur.parent;
+		}
+		// res=res+";"+
+		return res;
 	}
 
 	boolean goalTest(Node cur) {
@@ -168,49 +191,51 @@ public class LLAPSearch extends GenericSearch {
 
 	boolean blockedwall(Node cur) {
 		State state = cur.state;
-		if (state.moneySpent >= 100000 || state.food == 0 || state.materials == 0 || state.energy == 0)
+		if (state.moneySpent >= 100000 || state.food <= 0 || state.materials <= 0 || state.energy <= 0)
 			return true;
 		return false;
 	}
 
-	Node updatePending(Node cur, State newState) {
+	Node updatePending(Node cur, State newState, Action a) {
 
-		Node res = new Node(newState, cur, Action.WAIT, cur.depth + 1, cur.pendingFood, cur.pendingMaterials,
-				cur.pendingEnergy, cur.timeToFood, cur.timeToMaterials, cur.timeToEnergy);
+		Node res = new Node(newState, cur, a, cur.depth + 1, cur.pendingFood, cur.pendingMaterials, cur.pendingEnergy,
+				cur.timeToFood, cur.timeToMaterials, cur.timeToEnergy);
 
 		if (cur.timeToFood > 0) {
 			res.timeToFood = cur.timeToFood - 1;
 			if (res.timeToFood == 0) {
+				res.state.food += amountReqFood;
 				res.pendingFood = false;
 			}
 		}
 		if (cur.timeToMaterials > 0) {
 			res.timeToMaterials = cur.timeToMaterials - 1;
 			if (res.timeToMaterials == 0) {
+				res.state.materials += amountReqMaterials;
 				res.pendingMaterials = false;
 			}
 		}
 		if (cur.timeToEnergy > 0) {
 			res.timeToEnergy = cur.timeToEnergy - 1;
 			if (res.timeToEnergy == 0) {
+				res.state.energy += amountReqEnergy;
 				res.pendingEnergy = false;
 			}
 		}
-		res.pending=res.pendingFood||res.pendingMaterials||res.pendingEnergy;
-		
-		
+		res.pending = res.pendingFood || res.pendingMaterials || res.pendingEnergy;
+
 		return res;
 	}
 
 	public static void main(String args[]) {
-		LLAPSearch l1=new LLAPSearch();
-		String init="50;"+
-				"22,22,22;" +
-				"50,60,70;" +
-				"30,2;19,1;15,1;" +
-				"300,5,7,3,20;" +
-				"500,8,6,3,40;";
-		l1.solve(init, "DF", false);
+		LLAPSearch l1 = new LLAPSearch();
+		String init ="17;" +
+                "49,30,46;" +
+                "7,57,6;" +
+                "7,1;20,2;29,2;" +
+                "350,10,9,8,28;" +
+                "408,8,12,13,34;";
+		System.out.println(l1.solve(init, "DF", false));
 	}
-	
+
 }
