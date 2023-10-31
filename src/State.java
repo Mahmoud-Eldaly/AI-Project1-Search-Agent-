@@ -3,6 +3,8 @@ public class State {
 	int prosperity;
 	int food,materials,energy;
 	int moneySpent;
+/////
+	boolean blocked=false;
 	
 	public State(int p,int f, int m, int e,int mSpent) {
 		prosperity=p;

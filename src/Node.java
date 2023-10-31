@@ -11,7 +11,8 @@ public class Node {
 	boolean pendingFood,pendingMaterials,pendingEnergy;
 	boolean pending = false;
 	int timeToFood = Integer.MAX_VALUE, timeToMaterials = Integer.MAX_VALUE, timeToEnergy = Integer.MAX_VALUE;
-
+	
+	
 	
 	
 	public Node(State s,Node p, Action a,int d) {

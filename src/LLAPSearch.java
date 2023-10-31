@@ -61,7 +61,7 @@ public class LLAPSearch extends GenericSearch {
 
 	void expand(Node cur, Object list) {
 		this.nodesExpanded++;
-		//System.out.println(cur.state.moneySpent);
+		// System.out.println(cur.state.moneySpent);
 		if (this.blockedwall(cur))
 			return;
 		if (this.goalTest(cur)) {
@@ -74,12 +74,14 @@ public class LLAPSearch extends GenericSearch {
 		if (list instanceof Stack) {
 
 			for (Action act : Action.values()) {
-				if (!cur.pending || (act == Action.WAIT || act == Action.BUILD1 || act == Action.BUILD2))
+				if ((!cur.pending && act != Action.WAIT)
+						|| ((cur.pending && act == Action.WAIT) || act == Action.BUILD1 || act == Action.BUILD2))
 					((Stack<Node>) list).push(generate(cur, act));
 			}
 		} else if (list instanceof Queue) {
 			for (Action act : Action.values()) {
-				if (!cur.pending || (act == Action.WAIT || act == Action.BUILD1 || act == Action.BUILD2))
+				if ((!cur.pending && act != Action.WAIT)
+						|| ((cur.pending && act == Action.WAIT) || act == Action.BUILD1 || act == Action.BUILD2))
 					((Queue<Node>) list).add(generate(cur, act));
 			}
 		}
@@ -119,6 +121,8 @@ public class LLAPSearch extends GenericSearch {
 			state = new State(cur.prosperity + this.prosperityBUILD1, cur.food - this.foodUseBUILD1,
 					cur.materials - this.materialsUseBUILD1, cur.energy - this.energyUseBUILD1,
 					cur.moneySpent + this.priceBUILD1);
+			if(this.blockedwallState(state))
+				state.blocked=true;
 			if (!parent.pending) {
 				return new Node(state, parent, Action.BUILD1, parent.depth + 1);
 			} else {
@@ -129,6 +133,8 @@ public class LLAPSearch extends GenericSearch {
 			state = new State(cur.prosperity + this.prosperityBUILD2, cur.food - this.foodUseBUILD2,
 					cur.materials - this.materialsUseBUILD2, cur.energy - this.energyUseBUILD2,
 					cur.moneySpent + this.priceBUILD2);
+			if(this.blockedwallState(state))
+				state.blocked=true;
 			if (!parent.pending) {
 				return new Node(state, parent, Action.BUILD2, parent.depth + 1);
 			} else {
@@ -165,23 +171,26 @@ public class LLAPSearch extends GenericSearch {
 		this.materialsUseBUILD1 = values[15];
 		this.energyUseBUILD1 = values[16];
 		this.prosperityBUILD1 = values[17];
-		this.priceBUILD2 = values[18]+(this.foodUseBUILD2 * this.priceFood)
-				+ (this.materialsUseBUILD2 * this.priceMaterials) + (this.energyUseBUILD2 * this.priceEnergy);;
+		this.priceBUILD2 = values[18] + (this.foodUseBUILD2 * this.priceFood)
+				+ (this.materialsUseBUILD2 * this.priceMaterials) + (this.energyUseBUILD2 * this.priceEnergy);
+		;
 		this.foodUseBUILD2 = values[19];
 		this.materialsUseBUILD2 = values[20];
 		this.energyUseBUILD2 = values[21];
 		this.prosperityBUILD2 = values[22];
 
+		
 	}
 
 	String printChain(Node cur) {
 		String res = ";" + cur.state.moneySpent;
-		while (cur != null) {
+		while (cur.parent != null) {
 			System.out.println(cur.state);
 			res = cur.operator + "," + res;
 			cur = cur.parent;
 		}
 		// res=res+";"+
+		System.out.println(rootState.toString());
 		return res;
 	}
 
@@ -191,7 +200,12 @@ public class LLAPSearch extends GenericSearch {
 
 	boolean blockedwall(Node cur) {
 		State state = cur.state;
-		if (state.moneySpent >= 100000 || state.food <= 0 || state.materials <= 0 || state.energy <= 0)
+	  return blockedwallState(state);
+	}
+	
+	boolean blockedwallState(State state) {
+		
+		if (state.moneySpent >= 100000 || state.food <= 0 || state.materials <= 0 || state.energy <= 0||state.blocked)
 			return true;
 		return false;
 	}
@@ -205,6 +219,7 @@ public class LLAPSearch extends GenericSearch {
 			res.timeToFood = cur.timeToFood - 1;
 			if (res.timeToFood == 0) {
 				res.state.food += amountReqFood;
+				res.state.food = Math.min(res.state.food, 50);
 				res.pendingFood = false;
 			}
 		}
@@ -212,6 +227,7 @@ public class LLAPSearch extends GenericSearch {
 			res.timeToMaterials = cur.timeToMaterials - 1;
 			if (res.timeToMaterials == 0) {
 				res.state.materials += amountReqMaterials;
+				res.state.materials = Math.min(res.state.materials, 50);
 				res.pendingMaterials = false;
 			}
 		}
@@ -219,6 +235,7 @@ public class LLAPSearch extends GenericSearch {
 			res.timeToEnergy = cur.timeToEnergy - 1;
 			if (res.timeToEnergy == 0) {
 				res.state.energy += amountReqEnergy;
+				res.state.energy = Math.min(res.state.energy, 50);
 				res.pendingEnergy = false;
 			}
 		}
@@ -229,12 +246,12 @@ public class LLAPSearch extends GenericSearch {
 
 	public static void main(String args[]) {
 		LLAPSearch l1 = new LLAPSearch();
-		String init ="17;" +
-                "49,30,46;" +
-                "7,57,6;" +
-                "7,1;20,2;29,2;" +
-                "350,10,9,8,28;" +
-                "408,8,12,13,34;";
+		String init =  "0;" +
+                "19,35,40;" +
+                "27,84,200;" +
+                "15,2;37,1;19,2;" +
+                "569,11,20,3,50;"+
+                "115,5,8,21,38;" ;
 		System.out.println(l1.solve(init, "DF", false));
 	}
 
