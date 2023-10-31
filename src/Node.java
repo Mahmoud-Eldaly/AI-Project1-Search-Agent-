@@ -1,5 +1,5 @@
 
-public class Node {
+public class Node implements Comparable {
 	State state;
 	Node parent;
 	Action operator;
@@ -57,5 +57,13 @@ public class Node {
 		
 		
 		//pathCost=cost;
+	}
+
+
+
+	@Override
+	public int compareTo(Object o) {
+		// TODO Auto-generated method stub
+		return this.state.moneySpent-((Node)o).state.moneySpent;
 	}
 }

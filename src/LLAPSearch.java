@@ -30,7 +30,11 @@ public class LLAPSearch extends GenericSearch {
 			break;
 		case "BF":
 			list = new LinkedList<Node>();
-			((Queue<Node>) list).add(rootNode);
+			((LinkedList<Node>) list).add(rootNode);
+			break;
+		case "UC":
+			list = new PriorityQueue<Node>();
+			((PriorityQueue<Node>) list).add(rootNode);
 			break;
 		// rest of cases here...
 
@@ -40,23 +44,50 @@ public class LLAPSearch extends GenericSearch {
 		}
 
 		// handle the varieties of list here, i will just work with stack for now
-		while (!((Stack<Node>) list).isEmpty() && !foundIt) {
-			// can i order mresource at the same moment of finishing pending or i have to
-			// wait for next cycle?
-			// if (pendingFood && timeToFood == 0) {
-			// pendingFood = false;
-
-			// }
-			Node curNode = ((Stack<Node>) list).pop();
-			// for simplicity, print inly the path cost for now
-			// if (goalTest(curNode))
-			// return "" + curNode.pathCost;
-
-			expand(curNode, list);
-
+		//boolean termination=false;
+		//if(list instanceof Stack<Node>)
+			
+//		while (!((Stack<Node>) list).isEmpty() && !foundIt) {
+//			expand(((Stack<Node>) list).pop(), list);
+//		}
+		
+		if(list instanceof Stack)
+			solveDF(list);
+		else if(list instanceof LinkedList)
+			solveBF(list);
+		else if(list instanceof PriorityQueue) {
+			System.out.println("PQ");
+			solveUC(list);
 		}
 
 		return this.solution + ";" + this.nodesExpanded;
+	}
+	
+	void solveDF(Object list) {
+		while (!((Stack<Node>) list).isEmpty() && !foundIt) {
+			expand(((Stack<Node>) list).pop(), list);
+		}
+	}
+	
+	void solveBF(Object list) {
+		while (!((LinkedList<Node>) list).isEmpty() && !foundIt) {
+			expand(((LinkedList<Node>) list).remove(), list);
+		}
+	}
+	
+	
+	//not done yet!!!
+	void solveID(Object list) {
+		while (!((LinkedList<Node>) list).isEmpty() && !foundIt) {
+			expand(((LinkedList<Node>) list).remove(), list);
+		}
+	}
+	
+	void solveUC(Object list) {
+		System.out.println(list instanceof PriorityQueue);
+		while (!((PriorityQueue<Node>) list).isEmpty() && !foundIt) {
+			expand(((PriorityQueue<Node>) list).remove(), list);
+		}
 	}
 
 	void expand(Node cur, Object list) {
@@ -78,13 +109,20 @@ public class LLAPSearch extends GenericSearch {
 						|| ((cur.pending && act == Action.WAIT) || act == Action.BUILD1 || act == Action.BUILD2))
 					((Stack<Node>) list).push(generate(cur, act));
 			}
-		} else if (list instanceof Queue) {
+		} else if (list instanceof LinkedList) {
 			for (Action act : Action.values()) {
 				if ((!cur.pending && act != Action.WAIT)
 						|| ((cur.pending && act == Action.WAIT) || act == Action.BUILD1 || act == Action.BUILD2))
-					((Queue<Node>) list).add(generate(cur, act));
+					((LinkedList<Node>) list).add(generate(cur, act));
 			}
-		}
+		} else if(list instanceof PriorityQueue) {
+			for (Action act : Action.values()) {
+				if ((!cur.pending && act != Action.WAIT)
+						|| ((cur.pending && act == Action.WAIT) || act == Action.BUILD1 || act == Action.BUILD2))
+					((PriorityQueue<Node>) list).add(generate(cur, act));
+				
+			}
+		} 
 
 	}
 
@@ -246,13 +284,16 @@ public class LLAPSearch extends GenericSearch {
 
 	public static void main(String args[]) {
 		LLAPSearch l1 = new LLAPSearch();
-		String init =  "0;" +
-                "19,35,40;" +
-                "27,84,200;" +
-                "15,2;37,1;19,2;" +
-                "569,11,20,3,50;"+
-                "115,5,8,21,38;" ;
-		System.out.println(l1.solve(init, "DF", false));
+		String init =  "30;" +
+                "30,25,19;" +
+                "90,120,150;" +
+                "9,2;13,1;11,1;" +
+                "3195,11,12,10,34;" +
+                "691,7,8,6,15;";
+		
+		//System.out.println(l1.solve(init, "DF", false));
+		//System.out.println(l1.solve(init, "BF", false));
+		System.out.println(l1.solve(init, "UC", false));
 	}
 
 }
