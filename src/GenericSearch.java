@@ -1,7 +1,9 @@
 
-public abstract class GenericSearch {
+public class GenericSearch {
 
 	
-	abstract public String solve(String initalState, String strategy,boolean visualize);
+	 public static String solve(String initalState, String strategy,boolean visualize) {
+		 return "";
+	 }
  
 }

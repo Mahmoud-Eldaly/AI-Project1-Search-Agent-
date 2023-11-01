@@ -1,4 +1,4 @@
-package tests;
+//package tests;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,15 +30,18 @@ public class LLAPPlanChecker {
         String[] splitState = str.split(";");
 
         this.v0 = Integer.parseInt(splitState[0]);
+        //v0=init pros
 
         this.v1 = Integer.parseInt(splitState[1].split(",")[0]);
         this.v2 = Integer.parseInt(splitState[1].split(",")[1]);
         this.v3 = Integer.parseInt(splitState[1].split(",")[2]);
+        //food, mat, energy
 
         this.v4 = new HashMap<String, Integer>();
         v4.put("A", Integer.parseInt(splitState[2].split(",")[0]));
         v4.put("B", Integer.parseInt(splitState[2].split(",")[1]));
         v4.put("C", Integer.parseInt(splitState[2].split(",")[2]));
+        //prices A food,B mat, C Energy
 
 
         this.v5 = new ArrayList<Integer>();
@@ -49,6 +52,7 @@ public class LLAPPlanChecker {
         v5.add(0);
         v5.add(Integer.parseInt(splitState[3].split(",")[0]));
         v5.add(Integer.parseInt(splitState[3].split(",")[1]));
+        //[0,1,1,1,0,amountFood,delay food]
         v5.set(0, v5.get(0)+ v5.get(1)* v4.get("A")+ v5.get(2)* v4.get("B")+ v5.get(3)* v4.get("C"));
         this.v6 = new ArrayList<Integer>();
         v6.add(0);
@@ -78,8 +82,8 @@ public class LLAPPlanChecker {
         v8.add(0);
         v8.set(0, v8.get(0)+ v8.get(1)* v4.get("A")+ v8.get(2)* v4.get("B")+ v8.get(3)* v4.get("C"));
 
-        this.v9 =  new ArrayList<Integer>();
-        this.v10 =  new ArrayList<Integer>();
+        this.v9 =  new ArrayList<Integer>();//BUILD1 info
+        this.v10 =  new ArrayList<Integer>();//Build2 info
         for(int i=0;i<5;i++){
             String par1= splitState[6].split(",")[i];
             v9.add(Integer.parseInt(par1));
@@ -91,6 +95,7 @@ public class LLAPPlanChecker {
 
     }
     public boolean er(String y){
+    	//check if action is valid!!!
         ArrayList<Integer> x = new ArrayList<>();
         switch (y){
         case "A":
@@ -121,7 +126,7 @@ public class LLAPPlanChecker {
 
     public void ur(String y){
 
-
+    	//do the action
         ArrayList<Integer> x = new ArrayList<>();
 
         switch (y){
@@ -156,6 +161,7 @@ public class LLAPPlanChecker {
     }
 
     void au(){
+    	//update pending
         if (v15 !=-1 && v13 >0){
             v13--;
         }
@@ -176,6 +182,7 @@ public class LLAPPlanChecker {
     }
 
     void mc(){
+    	//max capacity
         if(v1 > v14){  v1 = v14;  }
         if(v2 > v14){  v2 = v14;  }
         if(v3 > v14){  v3 = v14;  }
@@ -248,7 +255,9 @@ public class LLAPPlanChecker {
 			case "wait":
 				linkin = s.f3();
 				break;
-			default: linkin = false;
+			default:
+				//System.out.println("hereree");
+				linkin = false;
             break;
 
 			}
@@ -272,7 +281,9 @@ public boolean applyPlan(String grid, String solution){
 //    System.out.println(solution);
 	String[] solutionArray  = solution.split(";");
 	String plan = solutionArray[0];
+	//seq of actions comma separated
 	int blue = Integer.parseInt(solutionArray[1]);
+	
 	plan.replace(" ", "");
 	plan.replace("\n", "");
 	plan.replace("\r", "");
@@ -288,5 +299,19 @@ public boolean applyPlan(String grid, String solution){
 		}
 
     return s.cool() && s.v12 ==blue;
+}
+public static void main(String [] args) {
+	String string="17;" +
+            "49,30,46;" +
+            "7,57,6;" +
+            "7,1;20,2;29,2;" +
+            "350,10,9,8,28;" +
+            "408,8,12,13,34;";
+	LLAPPlanChecker checker=new LLAPPlanChecker(string);
+	String []action={"build1", "build1", "build1"};
+	System.out.println(checker.tryPlan(action, checker));
+	System.out.println(checker.cool());
+	System.out.println(checker.v12);
+	
 }
 }
