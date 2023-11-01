@@ -32,10 +32,15 @@ public class LLAPSearch extends GenericSearch {
 			list = new LinkedList<Node>();
 			((LinkedList<Node>) list).add(rootNode);
 			break;
+		case "ID":
+			list = new Stack<Node>();
+			((Stack<Node>) list).push(rootNode);
+			break;
 		case "UC":
 			list = new PriorityQueue<Node>();
 			((PriorityQueue<Node>) list).add(rootNode);
 			break;
+			
 		// rest of cases here...
 
 		default:
@@ -51,49 +56,56 @@ public class LLAPSearch extends GenericSearch {
 //			expand(((Stack<Node>) list).pop(), list);
 //		}
 		
-		if(list instanceof Stack)
+		if(strategy=="DF")
 			solveDF(list);
-		else if(list instanceof LinkedList)
+		else if(strategy=="BF")
 			solveBF(list);
-		else if(list instanceof PriorityQueue) {
-			System.out.println("PQ");
+		else if(strategy=="UC") 
 			solveUC(list);
-		}
+		else if(strategy=="ID")
+			solveID(list);
 
 		return this.solution + ";" + this.nodesExpanded;
 	}
 	
 	void solveDF(Object list) {
 		while (!((Stack<Node>) list).isEmpty() && !foundIt) {
-			expand(((Stack<Node>) list).pop(), list);
+			expand(((Stack<Node>) list).pop(), list,Integer.MAX_VALUE);
 		}
 	}
 	
 	void solveBF(Object list) {
 		while (!((LinkedList<Node>) list).isEmpty() && !foundIt) {
-			expand(((LinkedList<Node>) list).remove(), list);
+			expand(((LinkedList<Node>) list).remove(), list,Integer.MAX_VALUE);
 		}
 	}
 	
 	
-	//not done yet!!!
+	
 	void solveID(Object list) {
-		while (!((LinkedList<Node>) list).isEmpty() && !foundIt) {
-			expand(((LinkedList<Node>) list).remove(), list);
+		for (int i = 0;!foundIt; i++) {
+			if(((Stack<Node>) list).isEmpty())
+				((Stack<Node>) list).push(new Node(this.rootState, null, null, 0));
+			while (!((Stack<Node>) list).isEmpty() && !foundIt) {
+				expand(((Stack<Node>) list).pop(), list,i);
+			}
+			
 		}
 	}
 	
 	void solveUC(Object list) {
-		System.out.println(list instanceof PriorityQueue);
+		//System.out.println(list instanceof PriorityQueue);
 		while (!((PriorityQueue<Node>) list).isEmpty() && !foundIt) {
-			expand(((PriorityQueue<Node>) list).remove(), list);
+			expand(((PriorityQueue<Node>) list).remove(), list,Integer.MAX_VALUE);
 		}
 	}
 
-	void expand(Node cur, Object list) {
+	void expand(Node cur, Object list,int limit) {
 		this.nodesExpanded++;
 		// System.out.println(cur.state.moneySpent);
-		if (this.blockedwall(cur))
+		if(cur.state.blocked)
+			nodesExpanded--;
+		if (this.blockedwall(cur)||cur.depth==limit)
 			return;
 		if (this.goalTest(cur)) {
 			foundIt = true;
@@ -293,7 +305,8 @@ public class LLAPSearch extends GenericSearch {
 		
 		//System.out.println(l1.solve(init, "DF", false));
 		//System.out.println(l1.solve(init, "BF", false));
-		System.out.println(l1.solve(init, "UC", false));
+//		System.out.println(l1.solve(init, "UC", false));
+		System.out.println(l1.solve(init, "ID", false));
 	}
 
 }
