@@ -3,15 +3,10 @@ import java.util.*;
 public class LLAPSearch extends GenericSearch {
 
 	static State rootState;
-	static int priceFood, priceMaterials, priceEnergy;
-	static int amountReqFood, delayReqFood;
-	static int amountReqMaterials, delayReqMaterials;
-	static int amountReqEnergy, delayReqEnergy;
-	static int priceBUILD1, foodUseBUILD1, materialsUseBUILD1, energyUseBUILD1, prosperityBUILD1;
-	static int priceBUILD2, foodUseBUILD2, materialsUseBUILD2, energyUseBUILD2, prosperityBUILD2;
 	static boolean foundIt = false;
 	static String solution = "NOSOLUTION";
 	static int nodesExpanded = 0;
+	static Stack<String> steps = new Stack<String>();
 
 	public LLAPSearch() {
 
@@ -19,8 +14,9 @@ public class LLAPSearch extends GenericSearch {
 
 	public static String solve(String initalState, String strategy, boolean visualize) {
 		// boolean condition;
-		tokenizeInitState(initalState);
-		Node rootNode = new Node(rootState, null, null, 0,0);
+		reset();
+		rootState = new State(initalState);
+		Node rootNode = new Node(rootState, null, null, 0, 0);
 		Object list;
 		switch (strategy) {
 		case "DF":
@@ -41,94 +37,86 @@ public class LLAPSearch extends GenericSearch {
 			break;
 		case "GR1":
 			list = new PriorityQueue<Node>();
-			rootNode.compareidx=1;
+			rootNode.compareidx = 1;
 			((PriorityQueue<Node>) list).add(rootNode);
 			break;
 		case "GR2":
 			list = new PriorityQueue<Node>();
-			rootNode.compareidx=2;
+			rootNode.compareidx = 2;
 			((PriorityQueue<Node>) list).add(rootNode);
 			break;
-		// rest of cases here...
+		case "AS1":
+			list = new PriorityQueue<Node>();
+			rootNode.compareidx = 3;
+			((PriorityQueue<Node>) list).add(rootNode);
+			break;
+		case "AS2":
+			list = new PriorityQueue<Node>();
+			rootNode.compareidx = 4;
+			((PriorityQueue<Node>) list).add(rootNode);
+			break;
 
 		default:
 			list = new PriorityQueue<Node>();
-			// add root node here..
+
 		}
 
-		// handle the varieties of list here, i will just work with stack for now
-		//boolean termination=false;
-		//if(list instanceof Stack<Node>)
-			
-//		while (!((Stack<Node>) list).isEmpty() && !foundIt) {
-//			expand(((Stack<Node>) list).pop(), list);
-//		}
-		
-		if(strategy.equals("DF"))
+		if (strategy.equals("DF"))
 			solveDF(list);
-		else if(strategy.equals("BF"))
+		else if (strategy.equals("BF"))
 			solveBF(list);
-		else if(strategy.equals("ID"))
+		else if (strategy.equals("ID"))
 			solveID(list);
-		else if(strategy.equals("UC")||strategy.equals("GR1")||strategy.equals("GR2")) 
+		else if (strategy.equals("UC") || strategy.equals("GR1") || strategy.equals("GR2") || strategy.equals("AS1")
+				|| strategy.equals("AS2"))
 			solveUC(list);
-//		else if(strategy.equals("GR1")) 
-//			solveUC(list);
-//		else if(strategy.equals("GR2")) 
-//			solveUC(list);
-		String res=solution.equals("NOSOLUTION")?"NOSOLUTION":solution + ";" + nodesExpanded;
-		reset();
+
+		String res = solution.equals("NOSOLUTION") ? "NOSOLUTION" : solution + ";" + nodesExpanded;
+		if (visualize)
+			while (!steps.isEmpty())
+				System.out.println(steps.pop());
+		//reset();
 		return res;
 	}
-	
+
 	static void solveDF(Object list) {
 		while (!((Stack<Node>) list).isEmpty() && !foundIt) {
-			expand(((Stack<Node>) list).pop(), list,Integer.MAX_VALUE);
+			expand(((Stack<Node>) list).pop(), list, Integer.MAX_VALUE);
 		}
 	}
-	
+
 	static void solveBF(Object list) {
 		while (!((LinkedList<Node>) list).isEmpty() && !foundIt) {
-			expand(((LinkedList<Node>) list).remove(), list,Integer.MAX_VALUE);
+			expand(((LinkedList<Node>) list).remove(), list, Integer.MAX_VALUE);
 		}
 	}
-	
+
 	static void solveID(Object list) {
-		for (int i = 0;!foundIt; i++) {
-			if(((Stack<Node>) list).isEmpty())
-				((Stack<Node>) list).push(new Node(rootState, null, null, 0,0));
+		for (int i = 0; !foundIt; i++) {
+			if (((Stack<Node>) list).isEmpty())
+				((Stack<Node>) list).push(new Node(rootState, null, null, 0, 0));
 			while (!((Stack<Node>) list).isEmpty() && !foundIt) {
-				expand(((Stack<Node>) list).pop(), list,i);
+				expand(((Stack<Node>) list).pop(), list, i);
 			}
-			
+
 		}
 	}
-	
+
 	static void solveUC(Object list) {
 		while (!((PriorityQueue<Node>) list).isEmpty() && !foundIt) {
-			expand(((PriorityQueue<Node>) list).remove(), list,Integer.MAX_VALUE);
+			expand(((PriorityQueue<Node>) list).remove(), list, Integer.MAX_VALUE);
 		}
 	}
-	
-//	
-//	void solveGR1(Object list) {
-//		while (!((PriorityQueue<Node>) list).isEmpty() && !foundIt) {
-//			expand(((PriorityQueue<Node>) list).remove(), list,Integer.MAX_VALUE);
-//		}
-//	}
 
-	static void expand(Node cur, Object list,int limit) {
+	static void expand(Node cur, Object list, int limit) {
 		nodesExpanded++;
-		 //System.out.println(cur.state.moneySpent+"      "+cur.depth);
-		if(cur.state.blocked)
+		if (cur.state.blocked)
 			nodesExpanded--;
-		if (blockedwall(cur)||cur.depth==limit)
+		if (blockedwall(cur) || cur.depth == limit)
 			return;
 		if (goalTest(cur)) {
 			foundIt = true;
 			solution = printChain(cur);
-			// System.out.println(cur.state.toString());
-			// System.out.println("I found it!!!!!");
 			return;
 		}
 		if (list instanceof Stack) {
@@ -144,14 +132,14 @@ public class LLAPSearch extends GenericSearch {
 						|| ((cur.pending && act == Action.WAIT) || act == Action.BUILD1 || act == Action.BUILD2))
 					((LinkedList<Node>) list).add(generate(cur, act));
 			}
-		} else if(list instanceof PriorityQueue) {
+		} else if (list instanceof PriorityQueue) {
 			for (Action act : Action.values()) {
 				if ((!cur.pending && act != Action.WAIT)
 						|| ((cur.pending && act == Action.WAIT) || act == Action.BUILD1 || act == Action.BUILD2))
 					((PriorityQueue<Node>) list).add(generate(cur, act));
-				
+
 			}
-		} 
+		}
 
 	}
 
@@ -162,48 +150,48 @@ public class LLAPSearch extends GenericSearch {
 		case RequestFood:
 
 			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
-					cur.moneySpent + priceFood + priceMaterials + priceEnergy);
-			return new Node(state, parent, Action.RequestFood, parent.depth + 1, true, false, false, delayReqFood,
-					0, 0,parent.compareidx);
+					cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy);
+			return new Node(state, parent, Action.RequestFood, parent.depth + 1, true, false, false, cur.delayReqFood,
+					0, 0, parent.compareidx);
 		case RequestMaterials:
 			////// price resoures here...
 			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
-					cur.moneySpent + priceFood + priceMaterials + priceEnergy);
+					cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy);
 			return new Node(state, parent, Action.RequestMaterials, parent.depth + 1, false, true, false, 0,
-					delayReqMaterials, 0,parent.compareidx);
+					cur.delayReqMaterials, 0, parent.compareidx);
 		case RequestEnergy:
 			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
-					cur.moneySpent + priceFood + priceMaterials + priceEnergy);
+					cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy);
 			return new Node(state, parent, Action.RequestEnergy, parent.depth + 1, false, false, true, 0, 0,
-					delayReqEnergy,parent.compareidx);
+					cur.delayReqEnergy, parent.compareidx);
 		case WAIT:
 			state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
-					cur.moneySpent + priceFood + priceMaterials + priceEnergy);
+					cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy);
 			if (!parent.pending) {
-				return new Node(state, parent, Action.WAIT, parent.depth + 1,parent.compareidx);
+				return new Node(state, parent, Action.WAIT, parent.depth + 1, parent.compareidx);
 			} else {
 				return updatePending(parent, state, Action.WAIT);
 			}
 		case BUILD1:
-			state = new State(cur.prosperity + prosperityBUILD1, cur.food - foodUseBUILD1,
-					cur.materials - materialsUseBUILD1, cur.energy - energyUseBUILD1,
-					cur.moneySpent + priceBUILD1);
-			if(blockedwallState(state))
-				state.blocked=true;
+			state = new State(cur.prosperity + cur.prosperityBUILD1, cur.food - cur.foodUseBUILD1,
+					cur.materials - cur.materialsUseBUILD1, cur.energy - cur.energyUseBUILD1,
+					cur.moneySpent + cur.priceBUILD1);
+			if (blockedwallState(state))
+				state.blocked = true;
 			if (!parent.pending) {
-				return new Node(state, parent, Action.BUILD1, parent.depth + 1,parent.compareidx);
+				return new Node(state, parent, Action.BUILD1, parent.depth + 1, parent.compareidx);
 			} else {
 				return updatePending(parent, state, Action.BUILD1);
 			}
 
 		case BUILD2:
-			state = new State(cur.prosperity + prosperityBUILD2, cur.food - foodUseBUILD2,
-					cur.materials - materialsUseBUILD2, cur.energy - energyUseBUILD2,
-					cur.moneySpent + priceBUILD2);
-			if(blockedwallState(state))
-				state.blocked=true;
+			state = new State(cur.prosperity + cur.prosperityBUILD2, cur.food - cur.foodUseBUILD2,
+					cur.materials - cur.materialsUseBUILD2, cur.energy - cur.energyUseBUILD2,
+					cur.moneySpent + cur.priceBUILD2);
+			if (blockedwallState(state))
+				state.blocked = true;
 			if (!parent.pending) {
-				return new Node(state, parent, Action.BUILD2, parent.depth + 1,parent.compareidx);
+				return new Node(state, parent, Action.BUILD2, parent.depth + 1, parent.compareidx);
 			} else {
 				return updatePending(parent, state, Action.BUILD2);
 			}
@@ -214,50 +202,16 @@ public class LLAPSearch extends GenericSearch {
 
 	}
 
-	static void tokenizeInitState(String initState) {
-		initState = initState.replace(';', ',');
-		String[] Strvalues = initState.split(",");
-		int[] values = new int[Strvalues.length];
-		for (int i = 0; i < values.length; i++) {
-			values[i] = Integer.parseInt(Strvalues[i]);
-		}
-
-		rootState = new State(values[0], values[1], values[2], values[3], 0);
-		priceFood = values[4];
-		priceMaterials = values[5];
-		priceEnergy = values[6];
-		amountReqFood = values[7];
-		delayReqFood = values[8];
-		amountReqMaterials = values[9];
-		delayReqMaterials = values[10];
-		amountReqEnergy = values[11];
-		delayReqEnergy = values[12];
-		foodUseBUILD1 = values[14];
-		materialsUseBUILD1 = values[15];
-		energyUseBUILD1 = values[16];
-		prosperityBUILD1 = values[17];
-		priceBUILD1 = values[13] + (foodUseBUILD1 * priceFood)
-				+ (materialsUseBUILD1 * priceMaterials) + (energyUseBUILD1 * priceEnergy);
-		
-		foodUseBUILD2 = values[19];
-		materialsUseBUILD2 = values[20];
-		energyUseBUILD2 = values[21];
-		prosperityBUILD2 = values[22];
-		priceBUILD2 = values[18] + (foodUseBUILD2 * priceFood)
-				+ (materialsUseBUILD2 * priceMaterials) + (energyUseBUILD2 * priceEnergy);
-
-		
-	}
-
 	static String printChain(Node cur) {
 		String res = ";" + cur.state.moneySpent;
 		while (cur.parent != null) {
-			System.out.println(cur.state);
+			steps.push(cur.state.toString());
+			// System.out.println(cur.state);
 			res = cur.operator + "," + res;
 			cur = cur.parent;
 		}
 		// res=res+";"+
-		System.out.println(rootState.toString());
+		steps.push(rootState.toString());
 		return res;
 	}
 
@@ -267,12 +221,12 @@ public class LLAPSearch extends GenericSearch {
 
 	static boolean blockedwall(Node cur) {
 		State state = cur.state;
-	  return blockedwallState(state);
+		return blockedwallState(state);
 	}
-	
+
 	static boolean blockedwallState(State state) {
-		
-		if (state.moneySpent >= 100000 || state.food <= 0 || state.materials <= 0 || state.energy <= 0||state.blocked)
+
+		if (state.moneySpent >= 100000 || state.food <= 0 || state.materials <= 0 || state.energy <= 0 || state.blocked)
 			return true;
 		return false;
 	}
@@ -280,12 +234,12 @@ public class LLAPSearch extends GenericSearch {
 	static Node updatePending(Node cur, State newState, Action a) {
 
 		Node res = new Node(newState, cur, a, cur.depth + 1, cur.pendingFood, cur.pendingMaterials, cur.pendingEnergy,
-				cur.timeToFood, cur.timeToMaterials, cur.timeToEnergy,cur.compareidx);
+				cur.timeToFood, cur.timeToMaterials, cur.timeToEnergy, cur.compareidx);
 
 		if (cur.timeToFood > 0) {
 			res.timeToFood = cur.timeToFood - 1;
 			if (res.timeToFood == 0) {
-				res.state.food += amountReqFood;
+				res.state.food += cur.state.amountReqFood;
 				res.state.food = Math.min(res.state.food, 50);
 				res.pendingFood = false;
 			}
@@ -293,7 +247,7 @@ public class LLAPSearch extends GenericSearch {
 		if (cur.timeToMaterials > 0) {
 			res.timeToMaterials = cur.timeToMaterials - 1;
 			if (res.timeToMaterials == 0) {
-				res.state.materials += amountReqMaterials;
+				res.state.materials += cur.state.amountReqMaterials;
 				res.state.materials = Math.min(res.state.materials, 50);
 				res.pendingMaterials = false;
 			}
@@ -301,7 +255,7 @@ public class LLAPSearch extends GenericSearch {
 		if (cur.timeToEnergy > 0) {
 			res.timeToEnergy = cur.timeToEnergy - 1;
 			if (res.timeToEnergy == 0) {
-				res.state.energy += amountReqEnergy;
+				res.state.energy += cur.state.amountReqEnergy;
 				res.state.energy = Math.min(res.state.energy, 50);
 				res.pendingEnergy = false;
 			}
@@ -310,34 +264,36 @@ public class LLAPSearch extends GenericSearch {
 
 		return res;
 	}
-	
+
 	static void reset() {
+		rootState=null;
 		foundIt = false;
 		solution = "NOSOLUTION";
 		nodesExpanded = 0;
+		steps = new Stack<String>();
 	}
 
 	public static void main(String args[]) {
 		LLAPSearch l1 = new LLAPSearch();
-		String init = "32;" +
-				"20,16,11;" +
-				"76,14,14;" +
-				"9,1;9,2;9,1;" +
-				"358,14,25,23,39;" +
-				"5024,20,17,17,38;";
-		
-		//System.out.println(l1.solve(init, "DF", false));
-		String sln=l1.solve(init, "DF", false);
+		String init = "30;" +
+                "30,25,19;" +
+                "90,120,150;" +
+                "9,2;13,1;11,1;" +
+                "3195,11,12,10,34;" +
+                "691,7,8,6,15;";
+
+		// System.out.println(l1.solve(init, "DF", false));
+		String sln = l1.solve(init, "ID", true);
 		System.out.println(sln);
 //		System.out.println(l1.solve(init, "UC", false));
 //		System.out.println(l1.solve(init, "ID", false));
 //		System.out.println(l1.solve(init, "GR1", false));
 //		System.out.println(l1.solve(init, "GR2", false));
-		String[] actions=(sln.split(";"))[0].split(",");
-		System.out.println(Arrays.toString(actions));
-		//LLAPPlanChecker checker=new LLAPPlanChecker(init);
-		//System.out.println(checker.tryPlan(actions,checker ));
-		
+//		String[] actions = (sln.split(";"))[0].split(",");
+//		System.out.println(Arrays.toString(actions));
+		// LLAPPlanChecker checker=new LLAPPlanChecker(init);
+		// System.out.println(checker.tryPlan(actions,checker ));
+
 	}
 
 }
