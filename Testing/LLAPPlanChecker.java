@@ -7,9 +7,9 @@ import java.util.HashMap;
 
 public class LLAPPlanChecker {
     int v0;
-    int v1;
-    int v2;
-    int v3;
+    int food;
+    int materials;
+    int energy;
     HashMap<String, Integer> v4;
     ArrayList<Integer> v5;
     ArrayList<Integer> v6;
@@ -21,10 +21,10 @@ public class LLAPPlanChecker {
     int v11 =100000;
     int v12 =0;
 
-    int v13 =0;
-    int v14 =50;
+    int deliverTime =0;
+    //int 50 =50;
 
-    int v15 = -1;
+    int deliverIdx = -1;
     public LLAPPlanChecker(String str){
 
         String[] splitState = str.split(";");
@@ -32,9 +32,9 @@ public class LLAPPlanChecker {
         this.v0 = Integer.parseInt(splitState[0]);
         //v0=init pros
 
-        this.v1 = Integer.parseInt(splitState[1].split(",")[0]);
-        this.v2 = Integer.parseInt(splitState[1].split(",")[1]);
-        this.v3 = Integer.parseInt(splitState[1].split(",")[2]);
+        this.food = Integer.parseInt(splitState[1].split(",")[0]);
+        this.materials = Integer.parseInt(splitState[1].split(",")[1]);
+        this.energy = Integer.parseInt(splitState[1].split(",")[2]);
         //food, mat, energy
 
         this.v4 = new HashMap<String, Integer>();
@@ -120,7 +120,7 @@ public class LLAPPlanChecker {
             x = new ArrayList<>();
             break;
         }
-        return (this.v1 >= x.get(1) && this.v2 >= x.get(2) && this.v3 >= x.get(3) && this.v11 - this.v12 >= x.get(0));
+        return (this.food >= x.get(1) && this.materials >= x.get(2) && this.energy >= x.get(3) && this.v11 - this.v12 >= x.get(0));
     }
 
 
@@ -153,39 +153,39 @@ public class LLAPPlanChecker {
                 break;
         }
 
-        this.v1 -= x.get(1);
-        this.v2 -= x.get(2);
-        this.v3 -= x.get(3);
+        this.food -= x.get(1);
+        this.materials -= x.get(2);
+        this.energy -= x.get(3);
         this.v12 += x.get(0);
         this.v0 += x.get(4);
     }
 
     void au(){
     	//update pending
-        if (v15 !=-1 && v13 >0){
-            v13--;
+        if (deliverIdx !=-1 && deliverTime >0){
+            deliverTime--;
         }
-        if (this.v13 ==0 && this.v15 !=-1){
+        if (this.deliverTime ==0 && this.deliverIdx !=-1){
 
-            if(this.v15 ==0){
-                this.v1 +=this.v5.get(5);
+            if(this.deliverIdx ==0){
+                this.food +=this.v5.get(5);
             }
-            if(this.v15 ==1){
-                this.v2 +=this.v6.get(5);
+            if(this.deliverIdx ==1){
+                this.materials +=this.v6.get(5);
             }
-            if(this.v15 ==2){
-                this.v3 +=this.v7.get(5);
+            if(this.deliverIdx ==2){
+                this.energy +=this.v7.get(5);
             }
-            this.v15 =-1;
-            this.v13 =0;
+            this.deliverIdx =-1;
+            this.deliverTime =0;
         }
     }
 
     void mc(){
     	//max capacity
-        if(v1 > v14){  v1 = v14;  }
-        if(v2 > v14){  v2 = v14;  }
-        if(v3 > v14){  v3 = v14;  }
+        if(food > 50){  food = 50;  }
+        if(materials > 50){  materials = 50;  }
+        if(energy > 50){  energy = 50;  }
     }
     boolean f1(String an){
         au();
@@ -194,16 +194,16 @@ public class LLAPPlanChecker {
        switch (an){
            case "A":
                if (this.v11 -this.v12 < this.v5.get(0)){return false;}i=0;
-               v13 = v5.get(6) ;break;
+               deliverTime = v5.get(6) ;break;
            case "B":
                if (this.v11 -this.v12 < this.v6.get(0)){return false;}i=1;
-               v13 = v6.get(6) ;break;
+               deliverTime = v6.get(6) ;break;
            case "C":
                if (this.v11 -this.v12 < this.v7.get(0)){return false;}i=2;
-               v13 = v7.get(6) ;break;
+               deliverTime = v7.get(6) ;break;
            default: return false;
        }
-        this.v15 =i;
+        this.deliverIdx =i;
         ur(an);
         mc();
     return true;
@@ -301,12 +301,12 @@ public boolean applyPlan(String grid, String solution){
     return s.cool() && s.v12 ==blue;
 }
 public static void main(String [] args) {
-	String string="17;" +
-            "49,30,46;" +
-            "7,57,6;" +
-            "7,1;20,2;29,2;" +
-            "350,10,9,8,28;" +
-            "408,8,12,13,34;";
+	String string="50;" +
+            "12,12,12;" +
+            "50,60,70;" +
+            "30,2;19,2;15,2;" +
+            "300,5,7,3,20;" +
+            "500,8,6,3,40;";
 	LLAPPlanChecker checker=new LLAPPlanChecker(string);
 	String []action={"build1", "build1", "build1"};
 	System.out.println(checker.tryPlan(action, checker));

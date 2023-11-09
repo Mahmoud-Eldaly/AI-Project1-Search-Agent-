@@ -4,6 +4,10 @@ public class State {
 	int prosperity;
 	int food, materials, energy;
 	int moneySpent;
+
+	int deliverIdx = -1;
+	int deliverTime = Integer.MAX_VALUE;
+
 	/////////////////////////
 	static int priceBUILD1, foodUseBUILD1, materialsUseBUILD1, energyUseBUILD1, prosperityBUILD1;
 	static int priceBUILD2, foodUseBUILD2, materialsUseBUILD2, energyUseBUILD2, prosperityBUILD2;
@@ -53,31 +57,44 @@ public class State {
 
 	}
 
-	public State(int p, int f, int m, int e, int mSpent) {
+//	public State(int p, int f, int m, int e, int mSpent) {
+//		prosperity = p;
+//		food = f;
+//		materials = m;
+//		energy = e;
+//		moneySpent = mSpent;
+//	}
+
+	public State(int p, int f, int m, int e, int mSpent, int dIdx, int time) {
 		prosperity = p;
 		food = f;
 		materials = m;
 		energy = e;
 		moneySpent = mSpent;
+		deliverIdx = dIdx;
+		deliverTime = time;
 	}
 
 	public String toString() {
 		return "State={Prosperity:" + prosperity + ", Food:" + food + ", Materials:" + materials + ", Energy:" + energy
-				+ ", SpentMoney :" + moneySpent + "}";
+				+ ", SpentMoney :" + moneySpent + ",   deliverIdx: "+deliverIdx+",   deliverTime : "+deliverTime+ "}";
 	}
 
 	public boolean equals(Object o) {
-		if(o==null||getClass()!=o.getClass())
+		if (o == null || getClass() != o.getClass())
 			return false;
-		State state=(State)o;
-		return (this.prosperity==state.prosperity&&this.food==state.food&&this.materials==state.materials&&this.energy==state.energy&&this.moneySpent==state.moneySpent);
-		
+		State state = (State) o;
+		return (this.prosperity == state.prosperity && this.food == state.food && this.materials == state.materials
+				&& this.energy == state.energy && this.moneySpent == state.moneySpent
+				&& this.deliverIdx == state.deliverIdx && this.deliverTime == state.deliverTime);
+
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(prosperity, food, materials, energy, moneySpent);
+		return Objects.hash(prosperity, food, materials, energy, moneySpent, deliverIdx, deliverTime);
 	}
+	//5*50*50*50*100000*4*4
 
 }
 
