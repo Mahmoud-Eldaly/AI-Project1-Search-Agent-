@@ -3,31 +3,26 @@ package code;
 import java.util.Objects;
 
 public class State {
+
     int prosperity;
     int food, materials, energy;
     int moneySpent;
-
     int deliverIdx = -1;
     int deliverTime = Integer.MAX_VALUE;
 
-    /////////////////////////
     static int priceBUILD1, foodUseBUILD1, materialsUseBUILD1, energyUseBUILD1, prosperityBUILD1;
     static int priceBUILD2, foodUseBUILD2, materialsUseBUILD2, energyUseBUILD2, prosperityBUILD2;
     static int priceFood, priceMaterials, priceEnergy;
     static int amountReqFood, delayReqFood;
     static int amountReqMaterials, delayReqMaterials;
     static int amountReqEnergy, delayReqEnergy;
-    /////
-    boolean blocked = false;
 
     public State(String initState) {
-        // can we call instance . static variable???
-
         initState = initState.replace(';', ',');
-        String[] Strvalues = initState.split(",");
-        int[] values = new int[Strvalues.length];
+        String[] strValues = initState.split(",");
+        int[] values = new int[strValues.length];
         for (int i = 0; i < values.length; i++) {
-            values[i] = Integer.parseInt(Strvalues[i]);
+            values[i] = Integer.parseInt(strValues[i]);
         }
         prosperity = values[0];
         food = values[1];
@@ -70,7 +65,7 @@ public class State {
     }
 
     public String toString() {
-        String resource = "No resource";
+        String resource;
         switch(deliverIdx) {
             case 0:
                 resource = "Food";
@@ -108,13 +103,3 @@ public class State {
     }
 
 }
-
-/*
- * initialP rosperity; initialF ood, initialM aterials, initialEnergy; unitP
- * riceF ood, unitP riceM aterials, unitP riceEnergy; amountRequestF ood,
- * delayRequestF ood; amountRequestM aterials, delayRequestM aterials;
- * amountRequestEnergy, delayRequestEnergy; priceBUILD1, foodUseBUILD1,
- * materialsUseBUILD1, energyUseBUILD1, prosperityBUILD1; priceBUILD2,
- * foodUseBUILD2, materialsUseBUILD2, energyUseBUILD2, prosperityBUILD1
- *
- */

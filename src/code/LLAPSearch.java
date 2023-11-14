@@ -4,257 +4,191 @@ import java.util.*;
 
 public class LLAPSearch extends GenericSearch {
 
-    static State rootState;
-    static boolean foundIt = false;
-    static String solution = "NOSOLUTION";
-    static int nodesExpanded = 0;
-    static Stack<String> steps = new Stack<String>();
-    static HashSet<State> expanded = new HashSet<State>();
+    public String strategy;
 
     public static String solve(String initialState, String strategy, boolean visualize) {
+        LLAPSearch problem = new LLAPSearch();
+        problem.strategy = strategy;
         reset();
-        rootState = new State(initialState);
-        Node rootNode = new Node(rootState, null, null, 0, 0);
-        Object list;
+        GenericSearch.initialState = new State(initialState);
+        Node rootNode = new Node(GenericSearch.initialState, null, null, 0, 0);
         switch (strategy) {
-            case "DF":
-                list = new Stack<Node>();
-                ((Stack<Node>) list).push(rootNode);
-                break;
-            case "BF":
-                list = new LinkedList<Node>();
-                ((LinkedList<Node>) list).add(rootNode);
-                break;
-            case "ID":
-                list = new Stack<Node>();
-                ((Stack<Node>) list).push(rootNode);
-                break;
-            case "UC":
-                list = new PriorityQueue<Node>();
-                ((PriorityQueue<Node>) list).add(rootNode);
-                break;
             case "GR1":
-                list = new PriorityQueue<Node>();
-                rootNode.compareidx = 1;
-                ((PriorityQueue<Node>) list).add(rootNode);
+                rootNode.compareIdx = 1;
                 break;
             case "GR2":
-                list = new PriorityQueue<Node>();
-                rootNode.compareidx = 2;
-                ((PriorityQueue<Node>) list).add(rootNode);
+                rootNode.compareIdx = 2;
                 break;
             case "AS1":
-                list = new PriorityQueue<Node>();
-                rootNode.compareidx = 3;
-                ((PriorityQueue<Node>) list).add(rootNode);
+                rootNode.compareIdx = 3;
                 break;
             case "AS2":
-                list = new PriorityQueue<Node>();
-                rootNode.compareidx = 4;
-                ((PriorityQueue<Node>) list).add(rootNode);
+                rootNode.compareIdx = 4;
                 break;
-
-            default:
-                list = new PriorityQueue<Node>();
-
         }
 
-        if (strategy.equals("DF"))
-            solveDF(list);
-        else if (strategy.equals("BF"))
-            solveBF(list);
-        else if (strategy.equals("ID"))
-            solveID(list);
-        else if (strategy.equals("UC") || strategy.equals("GR1") || strategy.equals("GR2") || strategy.equals("AS1")
-                || strategy.equals("AS2"))
-            solveUC(list);
+        problem.search(rootNode);
+
 
         String res = solution.equals("NOSOLUTION") ? "NOSOLUTION" : solution + ";" + nodesExpanded;
         if (visualize)
             while (!steps.isEmpty())
                 System.out.println(steps.pop());
-        // reset();
         return res;
     }
 
-    static void solveDF(Object list) {
-        while (!((Stack<Node>) list).isEmpty() && !foundIt) {
-            expand(((Stack<Node>) list).pop(), list, Integer.MAX_VALUE);
-        }
-    }
-
-    static void solveBF(Object list) {
-        while (!((LinkedList<Node>) list).isEmpty() && !foundIt) {
-
-            expand(((LinkedList<Node>) list).remove(), list, Integer.MAX_VALUE);
-        }
-    }
-
-    static void solveID(Object list) {
-        for (int i = 0; !foundIt; i++) {
-            if (((Stack<Node>) list).isEmpty())
-                ((Stack<Node>) list).push(new Node(rootState, null, null, 0, 0));
-            expanded = new HashSet<State>();
-            while (!((Stack<Node>) list).isEmpty() && !foundIt) {
-                expand(((Stack<Node>) list).pop(), list, i);
-            }
-
-        }
-    }
-
-    static void solveUC(Object list) {
-        while (!((PriorityQueue<Node>) list).isEmpty() && !foundIt) {
-            expand(((PriorityQueue<Node>) list).remove(), list, Integer.MAX_VALUE);
-        }
-    }
-
-    static void expand(Node cur, Object list, int limit) {
-        nodesExpanded++;
-        if (cur.state.blocked)
-            nodesExpanded--;
-        if (blockedwall(cur) || cur.depth == limit)
-            return;
-        if (goalTest(cur)) {
-            foundIt = true;
-            solution = printChain(cur);
-            return;
-        }
-
-        if (list instanceof Stack) {
-            for (Action act : Action.values()) {
-                if ((cur.state.deliverIdx == -1 && act != Action.WAIT)
-                        || ((cur.state.deliverIdx != -1 && act == Action.WAIT)
-                        || act == Action.BUILD1
-                        || act == Action.BUILD2)) {
-                    Node next = generate(cur, act);
-
-                    if (next != null && !expanded.contains(next.state)) {
-                        ((Stack<Node>) list).push(next);
-                        expanded.add(next.state);
-                    }
-                }
-            }
-        } else if (list instanceof LinkedList) {
-            for (Action act : Action.values()) {
-                if ((cur.state.deliverIdx == -1 && act != Action.WAIT)
-                        || ((cur.state.deliverIdx != -1 && act == Action.WAIT)
-                        || act == Action.BUILD1
-                        || act == Action.BUILD2)) {
-                    Node next = generate(cur, act);
-                    if (next != null && !expanded.contains(next.state)) {
-                        ((LinkedList<Node>) list).add(next);
-                        expanded.add(next.state);
-                    }
-
-                }
-            }
-        } else if (list instanceof PriorityQueue) {
-            for (Action act : Action.values()) {
-                if ((cur.state.deliverIdx == -1 && act != Action.WAIT)
-                        || ((cur.state.deliverIdx != -1 && act == Action.WAIT)
-                        || act == Action.BUILD1
-                        || act == Action.BUILD2)) {
-                    Node next = generate(cur, act);
-                    if (next != null && !expanded.contains(next.state)) {
-                        ((PriorityQueue<Node>) list).add(next);
-                        expanded.add(next.state);
-                    }
-
-                }
-
-            }
-        }
-
-    }
-
-    static Node generate(Node parent, Action operator) {
+    Node operator(Node parent, Action operator) {
         State cur = parent.state;
         State state;
+        Node next;
+
 
         switch (operator) {
             case RequestFood:
-
                 state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
                         cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy, 0, cur.delayReqFood);
-                return new Node(state, parent, Action.RequestFood, parent.depth + 1, parent.compareidx);
+                next = new Node(state, parent, Action.RequestFood, parent.depth + 1, parent.compareIdx);
+                break;
+
             case RequestMaterials:
                 ////// price resoures here...
                 state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
                         cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy, 1, cur.delayReqMaterials);
-                return new Node(state, parent, Action.RequestMaterials, parent.depth + 1, parent.compareidx);
+                next =  new Node(state, parent, Action.RequestMaterials, parent.depth + 1, parent.compareIdx);
+                break;
+
             case RequestEnergy:
                 state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
                         cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy, 2, cur.delayReqEnergy);
-                return new Node(state, parent, Action.RequestEnergy, parent.depth + 1, parent.compareidx);
+                next =  new Node(state, parent, Action.RequestEnergy, parent.depth + 1, parent.compareIdx);
+                break;
+
             case WAIT:
                 state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
                         cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy, cur.deliverIdx, cur.deliverTime);
                 if (parent.state.deliverIdx == -1) {
-                    return new Node(state, parent, Action.WAIT, parent.depth + 1, parent.compareidx);
+                    next =  new Node(state, parent, Action.WAIT, parent.depth + 1, parent.compareIdx);
                 } else {
-                    return updatePending(parent, state, Action.WAIT);
+                    next =  updatePending(parent, state, Action.WAIT);
                 }
+                break;
+
             case BUILD1:
                 state = new State(cur.prosperity + cur.prosperityBUILD1, cur.food - cur.foodUseBUILD1,
                         cur.materials - cur.materialsUseBUILD1, cur.energy - cur.energyUseBUILD1,
                         cur.moneySpent + cur.priceBUILD1, cur.deliverIdx, cur.deliverTime);
-                if (blockedwallState(state))
-                    return null;
                 if (parent.state.deliverIdx == -1) {
-                    return new Node(state, parent, Action.BUILD1, parent.depth + 1, parent.compareidx);
+                    next =  new Node(state, parent, Action.BUILD1, parent.depth + 1, parent.compareIdx);
                 } else {
-                    return updatePending(parent, state, Action.BUILD1);
+                    next =  updatePending(parent, state, Action.BUILD1);
                 }
+                break;
 
             case BUILD2:
                 state = new State(cur.prosperity + cur.prosperityBUILD2, cur.food - cur.foodUseBUILD2,
                         cur.materials - cur.materialsUseBUILD2, cur.energy - cur.energyUseBUILD2,
                         cur.moneySpent + cur.priceBUILD2, cur.deliverIdx, cur.deliverTime);
-                if (blockedwallState(state))
-                    return null;
                 if (parent.state.deliverIdx == -1) {
-                    return new Node(state, parent, Action.BUILD2, parent.depth + 1, parent.compareidx);
+                    next =  new Node(state, parent, Action.BUILD2, parent.depth + 1, parent.compareIdx);
                 } else {
                     //when pending
-                    return updatePending(parent, state, Action.BUILD2);
+                    next =  updatePending(parent, state, Action.BUILD2);
                 }
-
+                break;
             default:
                 return null;
         }
-    }
 
-    static String printChain(Node cur) {
-        String res = ";" + cur.state.moneySpent;
-        while (cur.parent != null) {
-            steps.push(cur.state.toString());
-            res = cur.operator + "," + res;
-            cur = cur.parent;
+        if(blockedWall(next)){
+            return null;
         }
-        // res=res+";"+
-        steps.push(rootState.toString());
-        return res;
+        return next;
     }
 
-    static boolean goalTest(Node cur) {
+    void queuing(Node cur, Collection list){
+        for (Action act : Action.values()) {
+            if ((cur.state.deliverIdx == -1 && act != Action.WAIT)
+                    || ((cur.state.deliverIdx != -1 && act == Action.WAIT)
+                    || act == Action.BUILD1
+                    || act == Action.BUILD2)) {
+                Node next = operator(cur, act);
+                if (next != null && !expanded.contains(next.state)) {
+                    list.add(next);
+                    expanded.add(next.state);
+                }
+            }
+        }
+    }
+
+    boolean goalTest(Node cur) {
         return cur.state.prosperity >= 100;
     }
 
-    static boolean blockedwall(Node cur) {
-        State state = cur.state;
-        return blockedwallState(state);
+    void search(Node initial){
+        switch (strategy) {
+            case "DF" -> solveDF(initial);
+            case "BF" -> solveBF(initial);
+            case "ID" -> solveID(initial);
+            case "UC", "GR1", "GR2", "AS1", "AS2" -> solveUC(initial);
+        }
     }
 
-    static boolean blockedwallState(State state) {
+    void solveDF(Node initial) {
+        Stack<Node> list = new Stack<>();
+        list.add(initial);
 
-        if (state.moneySpent >= 100000 || state.food <= 0 || state.materials <= 0 || state.energy <= 0 || state.blocked)
-            return true;
-        return false;
+        while (!list.isEmpty() && solution.equals("NOSOLUTION")) {
+            expand(list.pop(), list);
+        }
+    }
+
+    void solveBF(Node initial) {
+        Queue<Node> list = new LinkedList<>();
+        list.add(initial);
+
+        while (!list.isEmpty() && solution.equals("NOSOLUTION")) {
+            expand(list.remove(), list);
+        }
+    }
+
+    void solveID(Node initial) {
+        Stack<Node> list = new Stack<>();
+        list.add(initial);
+
+        for (int i = 0, maxDepth = 0; solution.equals("NOSOLUTION") && i <= maxDepth + 1; i++) {
+            if (list.isEmpty())
+                list.add(new Node(initialState, null, null, 0, 0));
+            expanded = new HashSet<State>();
+            while (!list.isEmpty() && solution.equals("NOSOLUTION")) {
+                Node top = list.pop();
+                maxDepth = Math.max(maxDepth, top.depth);
+                if (top.depth < i)
+                    expand(top, list);
+            }
+        }
+    }
+
+    void solveUC(Node initial) {
+        PriorityQueue<Node> list = new PriorityQueue<>();
+        list.add(initial);
+
+        while (!list.isEmpty() && solution.equals("NOSOLUTION")) {
+            expand(list.remove(), list);
+        }
+    }
+
+    boolean blockedWall(Node cur) {
+        State state = cur.state;
+        return blockedWallState(state);
+    }
+
+    boolean blockedWallState(State state) {
+        return state.moneySpent >= 100000 || state.food <= 0 || state.materials <= 0 || state.energy <= 0;
     }
 
     static Node updatePending(Node cur, State newState, Action a) {
 
-        Node res = new Node(newState, cur, a, cur.depth + 1, cur.compareidx);
+        Node res = new Node(newState, cur, a, cur.depth + 1, cur.compareIdx);
 
         if (newState.deliverTime > 0) {
             newState.deliverTime--;
@@ -283,8 +217,7 @@ public class LLAPSearch extends GenericSearch {
     }
 
     static void reset() {
-        rootState = null;
-        foundIt = false;
+        initialState = null;
         solution = "NOSOLUTION";
         nodesExpanded = 0;
         steps = new Stack<String>();
@@ -293,26 +226,13 @@ public class LLAPSearch extends GenericSearch {
 
     public static void main(String args[]) {
         LLAPSearch l1 = new LLAPSearch();
-        String init = "32;" +
+        String init = "50;" +
                 "20,16,11;" +
                 "76,14,14;" +
-                "9,1;9,2;9,1;" +
-                "358,14,25,23,39;" +
-                "5024,20,17,17,38;";
+                "7,1;7,1;7,1;" +
+                "359,14,25,23,39;" +
+                "524,18,17,17,38;";
 
-        System.out.println(l1.solve(init, "AS2", true));
-
-        //String sln = l1.solve(init, "BF", false);
-        //System.out.println(sln);
-//		System.out.println(l1.solve(init, "UC", false));
-//		System.out.println(l1.solve(init, "ID", false));
-//		System.out.println(l1.solve(init, "GR1", false));
-//		System.out.println(l1.solve(init, "GR2", false));
-//		String[] actions = (sln.split(";"))[0].split(",");
-//		System.out.println(Arrays.toString(actions));
-        // LLAPPlanChecker checker=new LLAPPlanChecker(init);
-        // System.out.println(checker.tryPlan(actions,checker ));
-
+        System.out.println(l1.solve(init, "AS1", true));
     }
-
 }

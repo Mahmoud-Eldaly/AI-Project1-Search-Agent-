@@ -12,48 +12,48 @@ import code.LLAPSearch;
 public class LLAPPublicGrading {
 
 	String initialState0 = "17;" +
-                "49,30,46;" +
-                "7,57,6;" +
-                "7,1;20,2;29,2;" +
-                "350,10,9,8,28;" +
-                "408,8,12,13,34;";
+			"49,30,46;" +
+			"7,57,6;" +
+			"7,1;20,2;29,2;" +
+			"350,10,9,8,28;" +
+			"408,8,12,13,34;";
 	String initialState1 = "50;" +
-                "12,12,12;" +
-                "50,60,70;" +
-                "30,2;19,2;15,2;" +
-                "300,5,7,3,20;" +
-                "500,8,6,3,40;";
-    String initialState2 = "30;" +
-                "30,25,19;" +
-                "90,120,150;" +
-                "9,2;13,1;11,1;" +
-                "3195,11,12,10,34;" +
-                "691,7,8,6,15;";
-    String initialState3 = "0;" +
-                "19,35,40;" +
-                "27,84,200;" +
-                "15,2;37,1;19,2;" +
-                "569,11,20,3,50;"+
-                "115,5,8,21,38;" ;
+			"12,12,12;" +
+			"50,60,70;" +
+			"30,2;19,2;15,2;" +
+			"300,5,7,3,20;" +
+			"500,8,6,3,40;";
+	String initialState2 = "30;" +
+			"30,25,19;" +
+			"90,120,150;" +
+			"9,2;13,1;11,1;" +
+			"3195,11,12,10,34;" +
+			"691,7,8,6,15;";
+	String initialState3 = "0;" +
+			"19,35,40;" +
+			"27,84,200;" +
+			"15,2;37,1;19,2;" +
+			"569,11,20,3,50;"+
+			"115,5,8,21,38;" ;
 
-    String initialState4 = "21;" +
-                "15,19,13;" +
-                "50,50,50;" +
-                "12,2;16,2;9,2;" +
-                "3076,15,26,28,40;" +
-                "5015,25,15,15,38;";
-    String initialState5 = "72;" +
-                "36,13,35;" +
-                "75,96,62;" +
-                "20,2;5,2;33,2;" +
-                "30013,7,6,3,36;" +
-                "40050,5,10,14,44;";
-    String initialState6 = "29;" +
-                "14,9,26;" +
-                "650,400,710;" +
-                "20,2;29,2;38,1;" +
-                "8255,8,7,9,36;" +
-                "30670,12,12,11,36;";
+	String initialState4 = "21;" +
+			"15,19,13;" +
+			"50,50,50;" +
+			"12,2;16,2;9,2;" +
+			"3076,15,26,28,40;" +
+			"5015,25,15,15,38;";
+	String initialState5 = "72;" +
+			"36,13,35;" +
+			"75,96,62;" +
+			"20,2;5,2;33,2;" +
+			"30013,7,6,3,36;" +
+			"40050,5,10,14,44;";
+	String initialState6 = "29;" +
+			"14,9,26;" +
+			"650,400,710;" +
+			"20,2;29,2;38,1;" +
+			"8255,8,7,9,36;" +
+			"30670,12,12,11,36;";
 	String initialState7= "1;" +
 			"6,10,7;" +
 			"2,1,66;" +
@@ -110,7 +110,7 @@ public class LLAPPublicGrading {
 	@Test(timeout = 120000)
 	public void testa4() throws Exception {
 		String solution = LLAPSearch.solve(initialState4, "BF", false);
-	    solution = solution.replace(" ", "");
+		solution = solution.replace(" ", "");
 		LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
 		assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState4, solution));
 	}
@@ -189,8 +189,8 @@ public class LLAPPublicGrading {
 	@Test(timeout = 120000)
 	public void testb4() throws Exception {
 		String solution = LLAPSearch.solve(initialState4, "DF", false);
-	    solution = solution.replace(" ", "");
-	    LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
+		solution = solution.replace(" ", "");
+		LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
 		assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState4, solution));
 	}
 	@Test(timeout = 120000)
@@ -345,8 +345,8 @@ public class LLAPPublicGrading {
 	@Test(timeout = 120000)
 	public void testd4() throws Exception {
 		String solution = LLAPSearch.solve(initialState4, "ID", false);
-	    solution = solution.replace(" ", "");
-	    LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
+		solution = solution.replace(" ", "");
+		LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
 		assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState4, solution));
 	}
 	@Test(timeout = 120000)
@@ -423,8 +423,8 @@ public class LLAPPublicGrading {
 	@Test(timeout = 120000)
 	public void teste4() throws Exception {
 		String solution = LLAPSearch.solve(initialState4, "GR1", false);
-	    solution = solution.replace(" ", "");
-	    LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
+		solution = solution.replace(" ", "");
+		LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
 		assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState4, solution));
 	}
 	@Test(timeout = 120000)
@@ -502,8 +502,8 @@ public class LLAPPublicGrading {
 	@Test(timeout = 120000)
 	public void testf4() throws Exception {
 		String solution = LLAPSearch.solve(initialState4, "GR2", false);
-	    solution = solution.replace(" ", "");
-	    LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
+		solution = solution.replace(" ", "");
+		LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
 		assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState4, solution));
 	}
 	@Test(timeout = 120000)
@@ -581,8 +581,8 @@ public class LLAPPublicGrading {
 	@Test(timeout = 120000)
 	public void testg4() throws Exception {
 		String solution = LLAPSearch.solve(initialState4, "AS1", false);
-	    solution = solution.replace(" ", "");
-	    LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
+		solution = solution.replace(" ", "");
+		LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
 		assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState4, solution));
 	}
 	@Test(timeout = 120000)
@@ -660,8 +660,8 @@ public class LLAPPublicGrading {
 	@Test(timeout = 120000)
 	public void testh4() throws Exception {
 		String solution = LLAPSearch.solve(initialState4, "AS2", false);
-	    solution = solution.replace(" ", "");
-	    LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
+		solution = solution.replace(" ", "");
+		LLAPPlanChecker pc = new LLAPPlanChecker(initialState4);
 		assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState4, solution));
 	}
 	@Test(timeout = 120000)
