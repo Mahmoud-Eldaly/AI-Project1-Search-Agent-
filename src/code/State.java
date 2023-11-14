@@ -65,20 +65,12 @@ public class State {
     }
 
     public String toString() {
-        String resource;
-        switch(deliverIdx) {
-            case 0:
-                resource = "Food";
-                break;
-            case 1:
-                resource = "Materials";
-                break;
-            case 2:
-                resource = "Energy";
-                break;
-            default:
-                resource = "No resource";
-        }
+        String resource = switch (deliverIdx) {
+            case 0 -> "Food";
+            case 1 -> "Materials";
+            case 2 -> "Energy";
+            default -> "No resource";
+        };
 
         return "code.State={Prosperity:" + prosperity + ", Food:" + food + ", Materials:" + materials + ", Energy:" + energy
                 + ", Spent money:" + moneySpent + ",   Waiting resource:" + resource + ",   Time to arrive:" + ((deliverTime == Integer.MAX_VALUE) ? "Infinity" : deliverTime) + "}";

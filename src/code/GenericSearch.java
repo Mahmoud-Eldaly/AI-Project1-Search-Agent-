@@ -8,11 +8,11 @@ public abstract class GenericSearch {
 
     static int nodesExpanded = 0;
 
-    static HashSet<State> expanded = new HashSet<State>();
+    static HashSet<State> expanded = new HashSet<>();
 
     static String solution = "NOSOLUTION";
 
-    static Stack<String> steps = new Stack<String>();
+    static Stack<String> steps = new Stack<>();
 
     abstract boolean goalTest(Node curNode);
 
@@ -23,15 +23,15 @@ public abstract class GenericSearch {
     abstract void queuing(Node cur, Collection list);
 
     String getSolution(Node cur) {
-        String res = ";" + cur.state.moneySpent;
+        StringBuilder res = new StringBuilder(";" + cur.state.moneySpent);
         while (cur.parent != null) {
             steps.push(cur.state.toString());
-            res = cur.operator + "," + res;
+            res.insert(0, cur.operator + ",");
             cur = cur.parent;
         }
-        // res=res+";"+
+
         steps.push(initialState.toString());
-        return res;
+        return res.toString();
     }
 
     void expand(Node cur, Collection list) {

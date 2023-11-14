@@ -13,18 +13,10 @@ public class LLAPSearch extends GenericSearch {
         GenericSearch.initialState = new State(initialState);
         Node rootNode = new Node(GenericSearch.initialState, null, null, 0, 0);
         switch (strategy) {
-            case "GR1":
-                rootNode.compareIdx = 1;
-                break;
-            case "GR2":
-                rootNode.compareIdx = 2;
-                break;
-            case "AS1":
-                rootNode.compareIdx = 3;
-                break;
-            case "AS2":
-                rootNode.compareIdx = 4;
-                break;
+            case "GR1" -> rootNode.compareIdx = 1;
+            case "GR2" -> rootNode.compareIdx = 2;
+            case "AS1" -> rootNode.compareIdx = 3;
+            case "AS2" -> rootNode.compareIdx = 4;
         }
 
         problem.search(rootNode);
@@ -46,26 +38,26 @@ public class LLAPSearch extends GenericSearch {
         switch (operator) {
             case RequestFood:
                 state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
-                        cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy, 0, cur.delayReqFood);
+                        cur.moneySpent + State.priceFood + State.priceMaterials + State.priceEnergy, 0, State.delayReqFood);
                 next = new Node(state, parent, Action.RequestFood, parent.depth + 1, parent.compareIdx);
                 break;
 
             case RequestMaterials:
-                ////// price resoures here...
+                ////// price resources here...
                 state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
-                        cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy, 1, cur.delayReqMaterials);
+                        cur.moneySpent + State.priceFood + State.priceMaterials + State.priceEnergy, 1, State.delayReqMaterials);
                 next =  new Node(state, parent, Action.RequestMaterials, parent.depth + 1, parent.compareIdx);
                 break;
 
             case RequestEnergy:
                 state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
-                        cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy, 2, cur.delayReqEnergy);
+                        cur.moneySpent + State.priceFood + State.priceMaterials + State.priceEnergy, 2, State.delayReqEnergy);
                 next =  new Node(state, parent, Action.RequestEnergy, parent.depth + 1, parent.compareIdx);
                 break;
 
             case WAIT:
                 state = new State(cur.prosperity, cur.food - 1, cur.materials - 1, cur.energy - 1,
-                        cur.moneySpent + cur.priceFood + cur.priceMaterials + cur.priceEnergy, cur.deliverIdx, cur.deliverTime);
+                        cur.moneySpent + State.priceFood + State.priceMaterials + State.priceEnergy, cur.deliverIdx, cur.deliverTime);
                 if (parent.state.deliverIdx == -1) {
                     next =  new Node(state, parent, Action.WAIT, parent.depth + 1, parent.compareIdx);
                 } else {
@@ -74,9 +66,9 @@ public class LLAPSearch extends GenericSearch {
                 break;
 
             case BUILD1:
-                state = new State(cur.prosperity + cur.prosperityBUILD1, cur.food - cur.foodUseBUILD1,
-                        cur.materials - cur.materialsUseBUILD1, cur.energy - cur.energyUseBUILD1,
-                        cur.moneySpent + cur.priceBUILD1, cur.deliverIdx, cur.deliverTime);
+                state = new State(cur.prosperity + State.prosperityBUILD1, cur.food - State.foodUseBUILD1,
+                        cur.materials - State.materialsUseBUILD1, cur.energy - State.energyUseBUILD1,
+                        cur.moneySpent + State.priceBUILD1, cur.deliverIdx, cur.deliverTime);
                 if (parent.state.deliverIdx == -1) {
                     next =  new Node(state, parent, Action.BUILD1, parent.depth + 1, parent.compareIdx);
                 } else {
@@ -85,9 +77,9 @@ public class LLAPSearch extends GenericSearch {
                 break;
 
             case BUILD2:
-                state = new State(cur.prosperity + cur.prosperityBUILD2, cur.food - cur.foodUseBUILD2,
-                        cur.materials - cur.materialsUseBUILD2, cur.energy - cur.energyUseBUILD2,
-                        cur.moneySpent + cur.priceBUILD2, cur.deliverIdx, cur.deliverTime);
+                state = new State(cur.prosperity + State.prosperityBUILD2, cur.food - State.foodUseBUILD2,
+                        cur.materials - State.materialsUseBUILD2, cur.energy - State.energyUseBUILD2,
+                        cur.moneySpent + State.priceBUILD2, cur.deliverIdx, cur.deliverTime);
                 if (parent.state.deliverIdx == -1) {
                     next =  new Node(state, parent, Action.BUILD2, parent.depth + 1, parent.compareIdx);
                 } else {
@@ -158,7 +150,7 @@ public class LLAPSearch extends GenericSearch {
         for (int i = 0, maxDepth = 0; solution.equals("NOSOLUTION") && i <= maxDepth + 1; i++) {
             if (list.isEmpty())
                 list.add(new Node(initialState, null, null, 0, 0));
-            expanded = new HashSet<State>();
+            expanded = new HashSet<>();
             while (!list.isEmpty() && solution.equals("NOSOLUTION")) {
                 Node top = list.pop();
                 maxDepth = Math.max(maxDepth, top.depth);
@@ -196,16 +188,16 @@ public class LLAPSearch extends GenericSearch {
         if (newState.deliverTime == 0 && newState.deliverIdx != -1) {
 
             if (newState.deliverIdx == 0) {
-                newState.food += newState.amountReqFood;
+                newState.food += State.amountReqFood;
                 newState.food = Math.min(newState.food, 50);
             }
             if (newState.deliverIdx == 1) {
-                newState.materials += newState.amountReqMaterials;
+                newState.materials += State.amountReqMaterials;
                 newState.materials = Math.min(newState.materials, 50);
 
             }
             if (newState.deliverIdx == 2) {
-                newState.energy += newState.amountReqEnergy;
+                newState.energy += State.amountReqEnergy;
                 newState.energy = Math.min(newState.energy, 50);
 
             }
@@ -220,12 +212,11 @@ public class LLAPSearch extends GenericSearch {
         initialState = null;
         solution = "NOSOLUTION";
         nodesExpanded = 0;
-        steps = new Stack<String>();
-        expanded = new HashSet<State>();
+        steps = new Stack<>();
+        expanded = new HashSet<>();
     }
 
-    public static void main(String args[]) {
-        LLAPSearch l1 = new LLAPSearch();
+    public static void main(String[] args) {
         String init = "50;" +
                 "20,16,11;" +
                 "76,14,14;" +
@@ -233,6 +224,6 @@ public class LLAPSearch extends GenericSearch {
                 "359,14,25,23,39;" +
                 "524,18,17,17,38;";
 
-        System.out.println(l1.solve(init, "AS1", true));
+        System.out.println(solve(init, "AS1", true));
     }
 }
