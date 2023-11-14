@@ -7,12 +7,12 @@ public class Node implements Comparable {
     int depth;
     int compareIdx;
 
-    public Node(State s, Node p, Action a, int d, int cidx) {
+    public Node(State s, Node p, Action a, int d, int cIdx) {
         state = s;
         parent = p;
         operator = a;
         depth = d;
-        compareIdx = cidx;
+        compareIdx = cIdx;
     }
 
     public int admH1() {
